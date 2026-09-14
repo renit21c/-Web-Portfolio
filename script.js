@@ -3,6 +3,106 @@
           "(prefers-reduced-motion: reduce)",
         ).matches;
 
+        /* ---------- star cursor and click sparks ---------- */
+        const starCursor = document.querySelector(".star-cursor");
+        const cursorSparks = document.querySelector(".cursor-sparks");
+        const cursorGlow = document.querySelector(".cursor-glow");
+        const finePointer = window.matchMedia(
+          "(hover: hover) and (pointer: fine)",
+        ).matches;
+        if (
+          starCursor &&
+          cursorSparks &&
+          cursorGlow &&
+          finePointer &&
+          !reduceMotion
+        ) {
+          let cursorFrame;
+          let cursorX = -100;
+          let cursorY = -100;
+          const setCursorPosition = () => {
+            starCursor.style.setProperty("--cursor-x", `${cursorX}px`);
+            starCursor.style.setProperty("--cursor-y", `${cursorY}px`);
+            starCursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0)`;
+          };
+          const createTrailStar = (event) => {
+            const trailStar = document.createElement("span");
+            const colors = ["#dbe1ff", "#b9c7ff", "#7887e8", "#ffffff"];
+            trailStar.className = "cursor-trail-star";
+            trailStar.textContent = "✦";
+            trailStar.style.left = `${event.clientX}px`;
+            trailStar.style.top = `${event.clientY}px`;
+            trailStar.style.setProperty(
+              "--trail-size",
+              `${7 + Math.random() * 9}px`,
+            );
+            trailStar.style.setProperty(
+              "--trail-color",
+              colors[Math.floor(Math.random() * colors.length)],
+            );
+            cursorSparks.append(trailStar);
+            trailStar.addEventListener("animationend", () => trailStar.remove(), {
+              once: true,
+            });
+          };
+          const moveCursor = (event) => {
+            cursorX = event.clientX - 11;
+            cursorY = event.clientY - 11;
+            cursorGlow.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate3d(-50%, -50%, 0)`;
+            cursorGlow.classList.add("is-visible");
+            createTrailStar(event);
+            if (!cursorFrame) {
+              cursorFrame = window.requestAnimationFrame(() => {
+                setCursorPosition();
+                cursorFrame = undefined;
+              });
+            }
+          };
+          const createSparks = (event) => {
+            starCursor.classList.add("is-clicking");
+            window.setTimeout(() => {
+              starCursor.classList.remove("is-clicking");
+              setCursorPosition();
+            }, 180);
+            const sparkCount = 8;
+            for (let index = 0; index < sparkCount; index += 1) {
+              const spark = document.createElement("span");
+              const angle = (Math.PI * 2 * index) / sparkCount;
+              const distance = 16 + Math.random() * 16;
+              spark.className = "cursor-spark";
+              spark.style.left = `${event.clientX - 2.5}px`;
+              spark.style.top = `${event.clientY - 2.5}px`;
+              spark.style.setProperty("--spark-x", `${Math.cos(angle) * distance}px`);
+              spark.style.setProperty("--spark-y", `${Math.sin(angle) * distance}px`);
+              cursorSparks.append(spark);
+              spark.addEventListener("animationend", () => spark.remove(), {
+                once: true,
+              });
+            }
+          };
+          document.addEventListener("pointermove", moveCursor, { passive: true });
+          document.addEventListener("pointerleave", () => {
+            cursorGlow.classList.remove("is-visible");
+          });
+          document.addEventListener("pointerdown", createSparks);
+          document.addEventListener("pointerover", (event) => {
+            const target = event.target.closest("a, button, [role='button'], summary");
+            const relatedTarget =
+              event.relatedTarget instanceof Element ? event.relatedTarget : null;
+            if (target && !target.contains(relatedTarget)) {
+              starCursor.classList.add("is-hovering");
+            }
+          });
+          document.addEventListener("pointerout", (event) => {
+            const target = event.target.closest("a, button, [role='button'], summary");
+            const relatedTarget =
+              event.relatedTarget instanceof Element ? event.relatedTarget : null;
+            if (target && !target.contains(relatedTarget)) {
+              starCursor.classList.remove("is-hovering");
+            }
+          });
+        }
+
         /* ---------- starfield ---------- */
         const canvas = document.getElementById("stars");
         const ctx = canvas.getContext("2d");
@@ -44,6 +144,25 @@
           resize();
           makeStars();
         });
+
+        /* ---------- continuously playing hero video ---------- */
+        const heroVideo = document.querySelector(".hero-video");
+        if (heroVideo) {
+          heroVideo.addEventListener(
+            "loadeddata",
+            () => {
+              if (heroVideo.currentTime === 0) {
+                heroVideo.currentTime = 0.01;
+              }
+            },
+            { once: true },
+          );
+          heroVideo.play().catch((error) => {
+            if (error.name !== "AbortError") {
+              console.error("Unable to autoplay the hero video.", error);
+            }
+          });
+        }
 
         /* ---------- seamless collaboration marquee ---------- */
         const collabTrack = document.querySelector(".collab-track");
@@ -145,6 +264,45 @@
 
         addDetails(".tl-desc", "Read role details");
         addDetails(".ach-card > p", "Read more");
+
+        /* ---------- interactive experience solar system ---------- */
+        const experiencePlanets = document.querySelectorAll(
+          ".solar-system .tl-item",
+        );
+        const experiencePanel = document.querySelector(
+          ".experience-detail-panel",
+        );
+        const selectExperience = (planet) => {
+          experiencePlanets.forEach((item) => {
+            const selected = item === planet;
+            item.classList.toggle("is-selected", selected);
+            item.setAttribute("aria-expanded", String(selected));
+          });
+          const logo = planet.querySelector(".tl-logo");
+          const role = planet.querySelector(".tl-role");
+          const org = planet.querySelector(".tl-org");
+          const date = planet.querySelector(".tl-date");
+          const description = planet.querySelector("details.more p");
+          experiencePanel.innerHTML = `
+            <img class="detail-panel-logo" src="${logo.src}" alt="${logo.alt}" />
+            <h3 class="detail-panel-title">${role.textContent}</h3>
+            <p class="detail-panel-meta">${org.textContent} · ${date.textContent}</p>
+            <p class="detail-panel-copy">${description.textContent}</p>
+          `;
+          experiencePanel.classList.add("has-selection");
+        };
+        experiencePlanets.forEach((planet) => {
+          planet.tabIndex = 0;
+          planet.setAttribute("role", "button");
+          planet.setAttribute("aria-expanded", "false");
+          planet.addEventListener("click", () => selectExperience(planet));
+          planet.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              selectExperience(planet);
+            }
+          });
+        });
 
         /* ---------- music player ---------- */
         const musicPlayer = document.getElementById("music-player");

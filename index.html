@@ -31,6 +31,9 @@
   </head>
   <body>
     <div class="nebula"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="star-cursor" aria-hidden="true">✦</div>
+    <div class="cursor-sparks" aria-hidden="true"></div>
 
     <header>
       <nav>
@@ -63,6 +66,7 @@
           muted
           loop
           playsinline
+          preload="auto"
           aria-hidden="true"
         >
           <source src="assets/earth.mp4" type="video/mp4" />
@@ -230,7 +234,21 @@
           <h2 class="reveal">Where I've put this to work.</h2>
           <p class="lede reveal">Selected roles and responsibilities.</p>
 
-          <div class="timeline">
+          <div
+            class="timeline solar-system"
+            aria-label="Interactive experience solar system"
+          >
+            <div class="solar-core" aria-hidden="true">
+              <span class="solar-core-glow"></span>
+              <span class="solar-core-label">Experience</span>
+            </div>
+            <aside
+              class="experience-detail-panel"
+              aria-live="polite"
+              aria-label="Selected experience details"
+            >
+              <p class="detail-panel-hint">Select an orbiting logo</p>
+            </aside>
             <div class="tl-item current reveal" data-index="4">
               <img
                 class="tl-logo"
@@ -612,9 +630,9 @@
               </div>
               <p class="card-desc">
                 Digital village portal for Desa Cikanyere that brings local
-                UMKM, landmarks, news, agendas, galleries, and public
-                statistics into one accessible website, supported by an admin
-                dashboard and Supabase-backed content management.
+                UMKM, landmarks, news, agendas, galleries, and public statistics
+                into one accessible website, supported by an admin dashboard and
+                Supabase-backed content management.
               </p>
               <div class="card-stack">
                 <span class="chip" title="JavaScript"
@@ -1168,12 +1186,7 @@
               <div class="bars">
                 <div class="bar-row">
                   <div class="bar-head">
-                    <span class="stack-name" title="Bahasa Indonesia"
-                      ><span
-                        class="material-symbols-outlined"
-                        aria-hidden="true"
-                        >translate</span
-                      ><span class="sr-only">Bahasa Indonesia</span></span
+                    <span class="stack-name" title="Indonesian">Indonesian</span
                     ><span class="lvl">Native</span>
                   </div>
                   <div class="bar-track">
@@ -1182,12 +1195,7 @@
                 </div>
                 <div class="bar-row">
                   <div class="bar-head">
-                    <span class="stack-name" title="English"
-                      ><span
-                        class="material-symbols-outlined"
-                        aria-hidden="true"
-                        >language</span
-                      ><span class="sr-only">English</span></span
+                    <span class="stack-name" title="English">English</span
                     ><span class="lvl">Proficient</span>
                   </div>
                   <div class="bar-track">
@@ -1225,9 +1233,7 @@
             </div>
             <div class="github-card-footer">
               <span
-                ><span
-                  class="material-symbols-outlined"
-                  aria-hidden="true"
+                ><span class="material-symbols-outlined" aria-hidden="true"
                   >update</span
                 >
                 Updated from GitHub activity</span
