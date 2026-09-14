@@ -113,6 +113,24 @@
           barFills.forEach((el) => el.classList.add("filled"));
         }
 
+        /* ---------- expandable stack details ---------- */
+        document.querySelectorAll(".stack-col .bar-row").forEach((row) => {
+          row.tabIndex = 0;
+          row.setAttribute("role", "button");
+          row.setAttribute("aria-expanded", "false");
+          const toggleDetails = () => {
+            const expanded = row.classList.toggle("is-expanded");
+            row.setAttribute("aria-expanded", String(expanded));
+          };
+          row.addEventListener("click", toggleDetails);
+          row.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleDetails();
+            }
+          });
+        });
+
         /* ---------- compact details and count-up metrics ---------- */
         function addDetails(selector, label) {
           document.querySelectorAll(selector).forEach((content) => {
