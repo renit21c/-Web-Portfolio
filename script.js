@@ -146,6 +146,39 @@
         addDetails(".tl-desc", "Read role details");
         addDetails(".ach-card > p", "Read more");
 
+        /* ---------- music player ---------- */
+        const musicPlayer = document.getElementById("music-player");
+        const musicToggle = document.querySelector(".music-toggle");
+        const musicIcon = musicToggle.querySelector(
+          ".material-symbols-outlined",
+        );
+        const setMusicState = (isPlaying) => {
+          musicToggle.setAttribute("aria-pressed", String(isPlaying));
+          musicToggle.setAttribute(
+            "aria-label",
+            isPlaying ? "Pause Forever Young" : "Play Forever Young",
+          );
+          musicToggle.setAttribute(
+            "title",
+            isPlaying ? "Pause Forever Young" : "Play Forever Young",
+          );
+          musicIcon.textContent = isPlaying ? "pause" : "play_arrow";
+        };
+        musicToggle.addEventListener("click", () => {
+          if (musicPlayer.paused) {
+            musicPlayer.play().catch((error) => {
+              setMusicState(false);
+              console.error("Unable to play Forever Young.", error);
+            });
+          } else {
+            musicPlayer.pause();
+            setMusicState(false);
+          }
+        });
+        musicPlayer.addEventListener("play", () => setMusicState(true));
+        musicPlayer.addEventListener("pause", () => setMusicState(false));
+        musicPlayer.addEventListener("ended", () => setMusicState(false));
+
         const metricEls = document.querySelectorAll(".stat b, .card-metrics b");
         const animateMetric = (el) => {
           if (el.dataset.animated) return;

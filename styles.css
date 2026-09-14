@@ -626,6 +626,12 @@ details.more p {
   bottom: 24px;
   z-index: 120;
 }
+.music-widget {
+  position: fixed;
+  right: 90px;
+  bottom: 24px;
+  z-index: 120;
+}
 .language-toggle {
   width: 54px;
   height: 54px;
@@ -639,6 +645,23 @@ details.more p {
   cursor: pointer;
 }
 .language-toggle:hover {
+  background: var(--violet);
+  color: #08080b;
+}
+.music-toggle {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--violet);
+  border-radius: 50%;
+  background: var(--bg-panel);
+  color: var(--violet);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+.music-toggle:hover,
+.music-toggle[aria-pressed="true"] {
   background: var(--violet);
   color: #08080b;
 }
@@ -698,6 +721,9 @@ details.more p {
 }
 @media (max-width: 760px) {
   .language-widget {
+    bottom: 88px;
+  }
+  .music-widget {
     bottom: 88px;
   }
 }
