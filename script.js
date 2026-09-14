@@ -389,13 +389,31 @@
           "Maqdis Connect": ["assets/projects/hamim.jpg", "assets/projects/obatin.jpg"],
           Obatin: ["assets/projects/hamim.jpg", "assets/projects/maqdis-connect.jpg"],
           SawalaEdu: ["assets/hero/hero-code.jpg", "assets/hero/hero-sketch.jpg"],
-          Brewly: ["assets/hero/hero-code.jpg", "assets/hero/hero-sketch.jpg"],
-          "Classification Model": ["assets/hero/hero-code.jpg", "assets/hero/hero-sketch.jpg"],
-          "K-Means Clustering": ["assets/hero/hero-sketch.jpg", "assets/hero/hero-code.jpg"],
-          "AIESEC Future Leaders": ["assets/projects/green-leaders.jpg", "assets/projects/igreen.jpg"],
-          "Green Leaders": ["assets/projects/aiesec.jpg", "assets/projects/igreen.jpg"],
-          iGreen: ["assets/projects/aiesec.jpg", "assets/projects/green-leaders.jpg"],
-          "Digital Illustration": ["assets/projects/art3.jpg"],
+          "Classification Model": [
+            "assets/projects/cm/cm2.png",
+            "assets/projects/cm/cm3.png",
+          ],
+          "K-Means Clustering": [
+            "assets/projects/kmeans/k2.png",
+            "assets/projects/kmeans/k3.png",
+          ],
+          "Cikanyere Ville": [
+            "assets/projects/cikanyereville/c2.png",
+            "assets/projects/cikanyereville/c3.png",
+          ],
+          "AIESEC Future Leaders": ["assets/projects/afl/afl2.jpeg"],
+          "Green Leaders": [
+            "assets/projects/gl/gl2.jpeg",
+            "assets/projects/gl/gl3.jpg",
+          ],
+          iGreen: [
+            "assets/projects/igreen/igreen2.jpeg",
+            "assets/projects/igreen/igreen3.jpeg",
+          ],
+          "Digital Illustration": [
+            "assets/projects/art/art2.png",
+            "assets/projects/art/art3.jpg",
+          ],
         };
         const openProject = (card) => {
           lbContent.innerHTML = "";
@@ -412,10 +430,11 @@
           ].filter(Boolean);
           const mediaWrap = document.createElement("div");
           mediaWrap.className = "project-modal-gallery";
+          let mainImage;
           if (gallery.length === 0) {
             mediaWrap.appendChild(mainMedia);
           } else {
-            const mainImage = document.createElement("img");
+            mainImage = document.createElement("img");
             mainImage.className = "project-modal-main-image";
             mainImage.src = gallery[0];
             mainImage.alt = `${title} project preview`;
@@ -434,7 +453,7 @@
               image.alt = `${title} preview ${index + 1}`;
               thumb.appendChild(image);
               thumb.addEventListener("click", () => {
-                mainImage.src = src;
+                if (mainImage) mainImage.src = src;
                 thumbs.querySelectorAll(".project-modal-thumb").forEach((item) => item.classList.remove("active"));
                 thumb.classList.add("active");
               });
@@ -665,50 +684,56 @@
         const translations = {
           id: {
             nav: ["Tentang", "Pengalaman", "Proyek", "Keahlian", "Tanya Ren"],
-            cta: "Kontak",
-            heroEyebrow: "Data Specialist Intern @ IPDN · Bandung, Indonesia",
-            heroTitle: "Saya mengubah <em>ide</em> menjadi produk yang siap digunakan.",
-            heroSub: "Produk, kode, dan data. Saya mengubah ide menjadi sesuatu yang berguna.",
-            work: "Lihat karya saya",
-            ask: "Tanya tentang saya",
+            cta: "Hubungi saya",
+            heroEyebrow: "Intern Data Specialist di IPDN · Bandung, Indonesia",
+            heroTitle: "Saya mengubah <em>ide</em> menjadi produk yang bisa digunakan.",
+            heroSub: "Saya menggabungkan produk, kode, dan data untuk membuat solusi yang benar-benar berguna.",
+            work: "Lihat karya",
+            ask: "Kenali saya lebih dekat",
             aboutKicker: "Tentang",
-            aboutTitle: "Pemikiran produk, didukung kemampuan untuk membangunnya.",
-            aboutText: "Mahasiswa tingkat akhir Teknik Informatika yang berfokus pada manajemen produk dan proyek, dengan kemampuan teknis untuk membangun. Saya nyaman merencanakan dan melacak roadmap di Jira atau ClickUp, sekaligus membuka codebase untuk proyek web, mobile, dan data/ML, karena memahami proses pembangunan membuat saya menjadi manajer yang lebih baik.",
-            stats: ["Proyek IT", "Proyek non-IT", "Orang yang dipimpin"],
+            aboutTitle: "Memahami produk, sekaligus mampu membangunnya.",
+            aboutText: "Saya mahasiswa tingkat akhir Teknik Informatika yang tertarik pada manajemen produk dan proyek, dengan kemampuan teknis untuk ikut membangun. Saya terbiasa menyusun dan memantau roadmap di Jira atau ClickUp, sekaligus mengerjakan proyek web, mobile, dan data/ML. Bagi saya, memahami proses pembuatannya adalah bagian penting dari menjadi manajer yang lebih baik.",
+            stats: ["Proyek IT", "Proyek non-IT", "Orang dalam tim"],
             experience: "Pengalaman",
-            experienceTitle: "Tempat saya menerapkan semua ini.",
+            experienceTitle: "Pengalaman menerapkan semuanya.",
             projects: "Proyek",
-            projectsTitle: "Perpaduan produk, kode, dan komunitas.",
-            browse: "Telusuri berdasarkan kategori.",
-            ongoing: "Proyek yang sedang berjalan",
-            finished: "Proyek selesai",
-            filters: ["Semua", "Produk dan Dampak", "Web dan Aplikasi", "Data dan ML", "Seni"],
+            projectsTitle: "Proyek di bidang produk, teknologi, dan komunitas.",
+            browse: "Pilih berdasarkan kategorinya.",
+            ongoing: "Proyek yang sedang dikerjakan",
+            finished: "Proyek yang sudah selesai",
+            filters: ["Semua", "Produk dan Dampak", "Web dan Aplikasi", "Data dan Machine Learning", "Seni"],
             stack: "Keahlian teknis",
-            stackTitle: "Yang benar-benar saya bangun.",
-            stackLede: "Alat yang saya gunakan untuk merencanakan, membangun, dan mengukur.",
+            stackTitle: "Teknologi yang saya gunakan.",
+            stackLede: "Alat untuk merencanakan, membangun, dan mengevaluasi pekerjaan.",
             achievements: "Pencapaian dan kepemimpinan",
+            github: "Aktivitas GitHub",
+            githubTitle: "Setahun berkarya secara terbuka.",
+            githubLead: "Aktivitas kontribusi terbaru dari",
+            githubUpdated: "Diperbarui berdasarkan aktivitas GitHub",
+            githubProfile: "Lihat profil GitHub",
+            achievementsTitle: "Kolaborasi yang baik tetap menjadi bagian penting dari pekerjaan.",
             askKicker: "Tanya tentang Ren",
-            askTitle: "Punya pertanyaan? Tanya saja.",
-            askLede: "Pilih pertanyaan untuk mempelajari lebih lanjut.",
+            askTitle: "Ingin tahu lebih banyak?",
+            askLede: "Pilih pertanyaan untuk mengenal pengalaman Ren lebih dekat.",
             contact: "Kontak",
-            contactTitle: "Mari membangun sesuatu.",
-            contactMeta: "Berbasis di Bandung, Indonesia. Terbuka untuk pekerjaan produk, manajemen proyek, dan pengembangan full-stack.",
+            contactTitle: "Mari kerjakan sesuatu bersama.",
+            contactMeta: "Berbasis di Bandung, Indonesia. Terbuka untuk peluang di bidang produk, manajemen proyek, dan pengembangan full-stack.",
             footer: "Dibuat dengan Plus Jakarta Sans.",
             languageTitle: "Pilih bahasa",
-            languagePrompt: "Apakah Anda nyaman menggunakan bahasa Inggris atau lebih memilih bahasa Indonesia?",
+            languagePrompt: "Anda ingin menggunakan bahasa Inggris atau bahasa Indonesia?",
             english: "Bahasa Inggris",
             indonesian: "Bahasa Indonesia",
             achievementTitles: [
-              "Kepala Pengembangan Produk Lokal, AIESEC di Bandung",
+              "Memimpin Pengembangan Produk Lokal di AIESEC Bandung",
               "Memimpin tim berisi 15 orang di Green Leaders",
-              "Mengelola hubungan dengan pemangku kepentingan di 3 desa dan 3 sekolah",
-              "Menerjemahkan regulasi menjadi sistem di IPDN"
+              "Menjaga kolaborasi dengan 3 desa dan 3 sekolah",
+              "Mengubah regulasi menjadi sistem di IPDN"
             ],
             achievementDetails: [
-              "Mengelola fungsi Product Development lokal dan program utama AIESEC Future Leaders, mengembangkannya hingga 190+ peserta dan pendapatan 15M+ IDR dalam program hybrid selama 2,5 bulan.",
-              "Mengarahkan tim lintas fungsi selama inisiatif aksi iklim SDG 13 selama 6 minggu bersama PwC, Indika Foundation, dan Greenpeace, serta mengamankan pendanaan proyek sebesar 9M+ IDR.",
-              "Mengelola 5+ pemangku kepentingan eksternal untuk iGreen, menjaga inisiatif keberlanjutan selama 4 minggu tetap berjalan hingga mencapai skor kepuasan relawan 9,0 dan profit 3M+ IDR.",
-              "Saat ini memetakan regulasi pemerintah langsung ke rule engine terstruktur di balik SIPK Praja, menerapkan pemikiran produk pada masalah teknis yang penting dan berisiko tinggi."
+              "Mengelola fungsi Product Development lokal dan program utama AIESEC Future Leaders selama 2,5 bulan, hingga menjangkau 190+ peserta dan menghasilkan pendapatan lebih dari 15 juta rupiah.",
+              "Mengarahkan tim lintas fungsi dalam program aksi iklim SDG 13 selama 6 minggu bersama PwC, Indika Foundation, dan Greenpeace, sekaligus mengamankan pendanaan lebih dari 9 juta rupiah.",
+              "Mengelola 5+ mitra eksternal untuk iGreen dan menjaga program keberlanjutan selama 4 minggu hingga meraih skor kepuasan relawan 9,0 serta profit lebih dari 3 juta rupiah.",
+              "Memetakan regulasi pemerintah ke dalam rule engine terstruktur untuk SIPK Praja, dengan pendekatan produk pada masalah teknis yang penting dan berisiko tinggi."
             ]
           }
         };
@@ -737,13 +762,27 @@
           document.querySelector("#projects .kicker").textContent = t.projects;
           document.querySelector("#stack .kicker").textContent = t.stack;
           document.querySelector("#achievements .kicker").textContent = t.achievements;
+          document.querySelector(".github-kicker").textContent = t.github;
+          document.querySelector(".github-title").textContent = t.githubTitle;
+          const githubLead = document.querySelector(".github-lede");
+          if (githubLead) {
+            const profileLink = githubLead.querySelector("a");
+            githubLead.textContent = `${t.githubLead} `;
+            if (profileLink) {
+              githubLead.appendChild(profileLink);
+              githubLead.append(".");
+            }
+          }
+          document.querySelector(".github-updated").textContent = t.githubUpdated;
+          document.querySelector(".github-profile-link").textContent = t.githubProfile;
+          document.querySelector("#achievements h2").textContent = t.achievementsTitle;
           document.querySelector("#ask .kicker").textContent = t.askKicker;
           document.querySelector("#contact .kicker").textContent = t.contact;
           document.querySelector("#about h2").textContent = t.aboutTitle;
           document.querySelector(".about-copy p").textContent = t.aboutText;
           document.querySelectorAll(".stat span").forEach((el, index) => { el.textContent = t.stats[index]; });
           document.querySelector("#experience h2").textContent = t.experienceTitle;
-          document.querySelector("#experience .lede").textContent = "Peran dan tanggung jawab pilihan.";
+          document.querySelector("#experience .lede").textContent = "Beberapa peran dan tanggung jawab yang pernah saya jalankan.";
           document.querySelector("#projects h2").textContent = t.projectsTitle;
           document.querySelector("#projects .lede").textContent = t.browse;
           const filterIcons = ["auto_awesome", "rocket_launch", "code", "monitoring", "draw"];
@@ -759,10 +798,8 @@
           document.querySelectorAll(".ach-card h3").forEach((el, index) => {
             el.textContent = t.achievementTitles[index];
           });
-          document.querySelectorAll(".ach-card details.more").forEach((details, index) => {
-            details.querySelector("summary").textContent = "Baca selengkapnya";
-            const paragraph = details.querySelector("p");
-            if (paragraph) paragraph.textContent = t.achievementDetails[index];
+          document.querySelectorAll(".ach-card p").forEach((paragraph, index) => {
+            paragraph.textContent = t.achievementDetails[index];
           });
           document.querySelector("#contact h2").textContent = t.contactTitle;
           document.querySelector(".contact-meta").textContent = t.contactMeta;
