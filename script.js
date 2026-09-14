@@ -203,11 +203,15 @@
           ].filter(Boolean);
           const mediaWrap = document.createElement("div");
           mediaWrap.className = "project-modal-gallery";
-          const mainImage = document.createElement("img");
-          mainImage.className = "project-modal-main-image";
-          mainImage.src = gallery[0];
-          mainImage.alt = `${title} project preview`;
-          mediaWrap.appendChild(mainImage);
+          if (gallery.length === 0) {
+            mediaWrap.appendChild(mainMedia);
+          } else {
+            const mainImage = document.createElement("img");
+            mainImage.className = "project-modal-main-image";
+            mainImage.src = gallery[0];
+            mainImage.alt = `${title} project preview`;
+            mediaWrap.appendChild(mainImage);
+          }
           if (gallery.length > 1) {
             const thumbs = document.createElement("div");
             thumbs.className = "project-modal-thumbs";
