@@ -385,10 +385,18 @@
         const lbClose = lightbox.querySelector(".lb-close");
         const projectGalleries = {
           "SIPK Praja": ["assets/hero/hero-code.jpg", "assets/hero/hero-sketch.jpg"],
-          HAMIM: ["assets/projects/maqdis-connect.jpg", "assets/projects/obatin.jpg"],
-          "Maqdis Connect": ["assets/projects/hamim.jpg", "assets/projects/obatin.jpg"],
-          Obatin: ["assets/projects/hamim.jpg", "assets/projects/maqdis-connect.jpg"],
-          SawalaEdu: ["assets/hero/hero-code.jpg", "assets/hero/hero-sketch.jpg"],
+          HAMIM: [
+            "assets/projects/hamim/hamim%20(2).jpeg",
+            "assets/projects/hamim/hamim%20(3).jpeg",
+          ],
+          "Maqdis Connect": [
+            "assets/projects/mq/mq%20(1).jpeg",
+            "assets/projects/mq/mq%20(2).jpeg",
+          ],
+          Obatin: [
+            "assets/projects/obatin/obatin2.jpeg",
+            "assets/projects/obatin/obatin3.jpeg",
+          ],
           "Classification Model": [
             "assets/projects/cm/cm2.png",
             "assets/projects/cm/cm3.png",
@@ -533,15 +541,15 @@
         const KB = [
           {
             k: ["who is ren", "about ren", "introduce", "tell me about ren"],
-            a: "Ren (Suma Renata Wijaya) is a final-year Informatics Engineering student and Data Specialist Intern at IPDN, based in Bandung. He's aspiring toward product/project management, but works across full-stack web, mobile, and data, planning roadmaps, building the product, and reading the numbers behind it.",
+            a: "I'm Ren, an Informatics Engineering student who likes building things and figuring out how they can actually be useful. I started more on the technical side, but over time I got more interested in product, project management, and working with people. So now I'm kind of in the middle of all three.",
           },
           {
             k: ["technolog", "stack", "tools", "tech"],
-            a: "On the build side: JavaScript/TypeScript, Java, Python, Dart, and Kotlin, with Laravel, Angular, FastAPI, React/Vite/Tailwind, and Flutter as frameworks. For data: MySQL, PostgreSQL with pgvector, and MongoDB, plus classification and clustering work in Python. For product/PM: Jira, ClickUp, and Google Workspace. For design: Figma, illustration, and video/photo editing.",
+            a: "I mostly work with web and mobile development, Python, AI, and databases. I've used things like Laravel, FastAPI, Flutter, JavaScript, and Python in different projects. I've also worked with AI, including NLP and chatbot projects. I'm not really attached to one specific tech stack though. Usually I just pick whatever makes the most sense for what I'm trying to build.",
           },
           {
             k: ["project", "built", "work on", "portfolio"],
-            a: "A mix of things: SIPK Praja (an AI-assisted case-management system at IPDN), HAMIM and Maqdis Connect (apps for Yayasan Maqdis), Obatin (a Flutter medication app for elderly users), SawalaEdu (a boarding-school monitoring platform), plus product/impact initiatives like AIESEC Future Leaders, Green Leaders, and iGreen.",
+            a: "Quite a few, honestly 😭. I've worked on web and mobile apps, AI and chatbot projects, an AR learning app for kids, financial education products, and some community projects. One of my recent ones was a village profile website for Desa Cikanyere, which I built together with Sidik during KKN.",
           },
           {
             k: [
@@ -550,7 +558,7 @@
               "focused on",
               "more focused",
             ],
-            a: "Genuinely both. Ren's roles have been project- and product-management-titled (Project Manager Intern, Local Head of Product Dev), but the SIPK Praja work and the GitHub repos show he's just as comfortable writing the code himself, which is deliberate: understanding the build makes him a better PM, and vice versa.",
+            a: "Product, probably. But I still really enjoy development. Having a technical background helps me understand what the developers are dealing with, while my project experience taught me to think about users, priorities, and the bigger picture. I like being somewhere in between the two.",
           },
           {
             k: [
@@ -560,15 +568,15 @@
               "ml",
               "machine learning",
             ],
-            a: "Ren's data experience spans a classification model and a K-Means clustering project from coursework, plus hands-on database work with MySQL, MongoDB, and PostgreSQL with pgvector on SIPK Praja, where structured data is used to power an AI-assisted investigation system.",
+            a: "I've worked with data mostly through my academic and project work. My current thesis, for example, combines sentiment analysis and stock price prediction using IndoBERT and LSTM. I've also worked with dashboards and data analysis in other projects. What I enjoy most is taking a bunch of data and trying to turn it into something that actually tells us something useful.",
           },
           {
             k: ["good project manager", "good pm", "why a good", "makes ren"],
-            a: "Ren pairs planning discipline, tracking work in Jira/ClickUp and managing 5+ external stakeholders on iGreen, with real delivery experience leading a 15-person team on Green Leaders and growing AIESEC Future Leaders to 190+ participants and 15M+ IDR in revenue. He also builds the products himself, so he can scope and de-risk technical work realistically.",
+            a: "I wouldn't say I'm a \"good PM\" just because I've had the title 😭. I think what helps me is that I've actually been on both sides. I've built things myself, but I've also managed teams, planned projects, talked with stakeholders, and dealt with things not going according to plan. For me, being a PM is mostly about keeping people aligned and making sure everyone understands what we're building and why we're building it.",
           },
           {
             k: ["leadership", "lead", "team"],
-            a: "Ren's leadership experience combines AIESEC and project management work. At AIESEC in Bandung, Ren served as Local Head of Product Development, leading the Future Leaders programme to 190+ participants and 15M+ IDR in revenue, and led a 15-person cross-functional team on Green Leaders, a 6-week SDG 13 climate-action initiative. Ren also built leadership through PM roles at Yayasan Maqdis and Mizan Publishing, coordinating stakeholders, delivery plans, and cross-functional teams to move product initiatives forward.",
+            a: "A lot of it actually came from AIESEC. I've led teams, organized programs, worked with external partners, and handled projects with quite a few moving parts. Before that, I was also involved in student organizations back in high school. I wouldn't say leadership made me someone who always knows what to do. If anything, it taught me how to listen, communicate, delegate, and figure things out together with the team.",
           },
           {
             k: ["contact", "reach", "hire", "email"],
