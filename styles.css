@@ -498,10 +498,30 @@ h2 {
   position: relative;
   z-index: 3;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.72fr);
-  gap: 60px;
-  align-items: center;
+  grid-template-columns: minmax(0, 0.9fr) minmax(300px, 1fr) minmax(0, 0.9fr);
+  gap: 34px;
+  align-items: stretch;
   width: 100%;
+  height: calc(92vh - 120px);
+}
+.hero-side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.hero-side-left {
+  align-self: end;
+  height: max-content;
+  padding-bottom: 8%;
+}
+.hero-side-left h1 {
+  font-size: clamp(2rem, 3.4vw, 3rem);
+}
+.hero-side-right {
+  align-self: end;
+  height: max-content;
+  justify-content: flex-end;
+  padding-bottom: 8%;
 }
 .hero-portrait {
   display: flex;
@@ -510,8 +530,8 @@ h2 {
   align-self: stretch;
 }
 .hero-portrait img {
-  width: 100%;
-  max-width: 460px;
+  width: min(500px, 42vw);
+  max-width: none;
   height: auto;
   object-fit: contain;
   margin-bottom: -60px;
@@ -538,8 +558,9 @@ h1 em {
   font-style: italic;
   color: #b9c7ff;
 }
-.hero-tagline {
-  font-size: 0.78em;
+.hero-side-right .hero-tagline {
+  font-size: clamp(1.75rem, 3.4vw, 3rem);
+  margin-bottom: 22px;
 }
 .hero-greeting {
   display: inline-block;
@@ -548,21 +569,21 @@ h1 em {
 .hero-sub {
   color: var(--ink-dim);
   font-size: 1.18rem;
-  max-width: 46ch;
-  margin: 0 0 40px;
+  max-width: 30ch;
+  margin: 0 0 28px;
 }
 .hero-cta {
   display: flex;
-  gap: 16px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 26px;
+  padding: 11px 18px;
   border-radius: 10px;
-  font-size: 0.98rem;
+  font-size: 0.88rem;
   font-weight: 600;
   transition:
     transform 0.2s ease,
@@ -601,18 +622,46 @@ h1 em {
   .hero-grid {
     grid-template-columns: 1fr;
     align-items: start;
-    gap: 34px;
+    gap: 18px;
+    height: auto;
+    width: 100%;
+    min-width: 0;
+  }
+  .hero-side-left,
+  .hero-side-right {
+    align-self: auto;
+    padding: 0;
+  }
+  .hero-side-right {
+    order: 3;
+    justify-content: flex-start;
+  }
+  .hero-side-right .hero-tagline {
+    font-size: clamp(2.25rem, 10vw, 3.25rem);
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+  .hero-side-left {
+    order: 1;
+  }
+  .hero-side-left {
+    margin-bottom: 0;
+  }
+  .hero-side-left h1 {
+    font-size: clamp(2rem, 8vw, 2.7rem);
   }
   .hero-portrait {
     position: static;
     justify-self: center;
+    order: 2;
     width: min(245px, 68vw);
     height: auto;
-    margin-bottom: -72px;
+    margin-bottom: 0;
     pointer-events: auto;
   }
   .hero-portrait img {
     width: 100%;
+    max-width: 280px;
     margin-bottom: 0;
   }
 }
