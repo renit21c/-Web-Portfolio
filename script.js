@@ -1,4 +1,72 @@
       (function () {
+        const savedTheme = window.localStorage.getItem("portfolio-theme");
+        const initialTheme =
+          savedTheme === "dark" || savedTheme === "light"
+            ? savedTheme
+            : "dark";
+        document.documentElement.dataset.theme = initialTheme;
+
+        const streakCount = document.getElementById("duolingo-streak-count");
+        if (streakCount) {
+          const streakStorageKey = "duolingo-streak-state";
+          const today = new Date();
+          const todayKey = [
+            today.getFullYear(),
+            String(today.getMonth() + 1).padStart(2, "0"),
+            String(today.getDate()).padStart(2, "0"),
+          ].join("-");
+          const storedState = window.localStorage.getItem(streakStorageKey);
+          let streak = 267;
+          if (storedState) {
+            try {
+              const parsedState = JSON.parse(storedState);
+              if (
+                Number.isInteger(parsedState.streak) &&
+                parsedState.streak >= 267 &&
+                typeof parsedState.lastUpdated === "string"
+              ) {
+                streak = parsedState.streak;
+                if (parsedState.lastUpdated !== todayKey) {
+                  streak += 1;
+                }
+              }
+            } catch (error) {
+              console.warn("Unable to read the saved Duolingo streak.", error);
+            }
+          }
+          streakCount.textContent = String(streak);
+          window.localStorage.setItem(
+            streakStorageKey,
+            JSON.stringify({ streak, lastUpdated: todayKey }),
+          );
+        }
+
+        const themeToggle = document.querySelector(".theme-toggle");
+        const updateThemeToggle = (theme) => {
+          if (!themeToggle) return;
+          const darkMode = theme === "dark";
+          themeToggle.setAttribute("aria-pressed", String(darkMode));
+          themeToggle.setAttribute(
+            "aria-label",
+            darkMode ? "Switch to light mode" : "Switch to dark mode",
+          );
+          themeToggle.setAttribute(
+            "title",
+            darkMode ? "Switch to light mode" : "Switch to dark mode",
+          );
+          themeToggle.querySelector(".theme-icon").textContent = darkMode
+            ? "light_mode"
+            : "dark_mode";
+        };
+        updateThemeToggle(initialTheme);
+        themeToggle?.addEventListener("click", () => {
+          const nextTheme =
+            document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+          document.documentElement.dataset.theme = nextTheme;
+          window.localStorage.setItem("portfolio-theme", nextTheme);
+          updateThemeToggle(nextTheme);
+        });
+
         const reduceMotion = window.matchMedia(
           "(prefers-reduced-motion: reduce)",
         ).matches;
@@ -123,7 +191,10 @@
         }
         function drawStars() {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = "#fff";
+          ctx.fillStyle =
+            document.documentElement.dataset.theme === "dark"
+              ? "#dbe1ff"
+              : "#9fc8e8";
           for (const s of stars) {
             ctx.globalAlpha = s.a;
             ctx.beginPath();
@@ -503,6 +574,23 @@
             }
           });
         });
+
+        document.querySelectorAll(".card-link").forEach((link) => {
+          const icon = link.querySelector(".material-symbols-outlined");
+          if (!icon) return;
+          if (link.href.includes("play.google.com")) {
+            icon.className = "fa-brands fa-google-play";
+            icon.textContent = "";
+            icon.setAttribute("aria-hidden", "true");
+            return;
+          }
+          if (link.href.includes("github.com")) {
+            icon.className = "fa-brands fa-github";
+            icon.textContent = "";
+            icon.setAttribute("aria-hidden", "true");
+          }
+        });
+
         function closeLightbox() {
           lightbox.classList.remove("open");
           lbContent.innerHTML = "";
@@ -517,24 +605,45 @@
 
         /* ---------- project filter ---------- */
         const filterBtns = document.querySelectorAll(".filter-btn");
+        const projectCards = document.querySelectorAll(
+          "#projects .project-grid .card",
+        );
         const cards = document.querySelectorAll("#project-grid .card");
+        const ongoingGrid = document.querySelector(
+          "#projects .ongoing-project-grid",
+        );
+        const ongoingTitle = ongoingGrid?.previousElementSibling;
+        const finishedTitle = document.querySelector(
+          "#project-grid",
+        )?.previousElementSibling;
         const projectGrid = document.getElementById("project-grid");
         const updateProjectLayout = () => {
           const visibleCards = [...cards].filter((card) => card.style.display !== "none");
           projectGrid.classList.toggle("single-result", visibleCards.length === 1);
+          const ongoingVisible = [...(ongoingGrid?.querySelectorAll(".card") ?? [])]
+            .some((card) => card.style.display !== "none");
+          const finishedVisible = visibleCards.length > 0;
+          if (ongoingGrid) ongoingGrid.style.display = ongoingVisible ? "" : "none";
+          if (ongoingTitle) ongoingTitle.style.display = ongoingVisible ? "" : "none";
+          if (projectGrid) projectGrid.style.display = finishedVisible ? "" : "none";
+          if (finishedTitle) finishedTitle.style.display = finishedVisible ? "" : "none";
         };
         filterBtns.forEach((btn) => {
           btn.addEventListener("click", () => {
             filterBtns.forEach((b) => b.classList.remove("active"));
             btn.classList.add("active");
             const f = btn.dataset.filter;
-            cards.forEach((c) => {
+            projectCards.forEach((c) => {
               c.style.display =
                 f === "all" || c.dataset.cat === f ? "" : "none";
             });
             updateProjectLayout();
           });
         });
+        const defaultProjectFilter = document.querySelector(
+          '#projects .filter-btn[data-filter="product"]',
+        );
+        if (defaultProjectFilter) defaultProjectFilter.click();
         updateProjectLayout();
 
         /* ---------- ask ren ---------- */
@@ -709,7 +818,7 @@
             browse: "Pilih berdasarkan kategorinya.",
             ongoing: "Proyek yang sedang dikerjakan",
             finished: "Proyek yang sudah selesai",
-            filters: ["Semua", "Produk dan Dampak", "Web dan Aplikasi", "Data dan Machine Learning", "Seni"],
+            filters: ["Produk dan Dampak", "Web dan Aplikasi", "Data dan Machine Learning", "Seni"],
             stack: "Keahlian teknis",
             stackTitle: "Teknologi yang saya gunakan.",
             stackLede: "Alat untuk merencanakan, membangun, dan mengevaluasi pekerjaan.",
@@ -793,7 +902,7 @@
           document.querySelector("#experience .lede").textContent = "Beberapa peran dan tanggung jawab yang pernah saya jalankan.";
           document.querySelector("#projects h2").textContent = t.projectsTitle;
           document.querySelector("#projects .lede").textContent = t.browse;
-          const filterIcons = ["auto_awesome", "rocket_launch", "code", "monitoring", "draw"];
+          const filterIcons = ["rocket_launch", "code", "monitoring", "draw"];
           document.querySelectorAll("#projects .filter-btn").forEach((button, index) => {
             button.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">${filterIcons[index]}</span> ${t.filters[index]}`;
           });
