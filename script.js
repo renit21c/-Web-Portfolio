@@ -1,10 +1,191 @@
       (function () {
-        const savedTheme = window.localStorage.getItem("portfolio-theme");
-        const initialTheme =
-          savedTheme === "dark" || savedTheme === "light"
-            ? savedTheme
-            : "dark";
-        document.documentElement.dataset.theme = initialTheme;
+        document.documentElement.dataset.theme = "dark";
+
+        const screenOrder = [
+          "hero",
+          "about",
+          "experience",
+          "projects",
+          "stack",
+          "achievements",
+          "github",
+          "ask",
+          "contact",
+        ];
+        const screenIds = new Set(screenOrder);
+        const menuMusic = document.getElementById("main-menu-bgm");
+        const portfolioMusic = document.getElementById("portfolio-bgm");
+        const menuFogVideo = document.querySelector(".hero-fog-video");
+        const navigationToggle = document.querySelector(".navtoggle");
+        const soundTargetSelector =
+          "a[href], button, [role='button'], input[type='button'], input[type='submit'], input[type='reset'], summary";
+        let interfaceAudioContext;
+        const playInterfaceSound = (soundType) => {
+          const AudioContextClass =
+            window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) {
+            console.warn("Web Audio is unavailable; interface sounds are disabled.");
+            return;
+          }
+          interfaceAudioContext ??= new AudioContextClass();
+          const context = interfaceAudioContext;
+          const playTone = () => {
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            const isClick = soundType === "click";
+            const now = context.currentTime;
+            const duration = isClick ? 0.08 : 0.045;
+            oscillator.type = isClick ? "triangle" : "sine";
+            oscillator.frequency.setValueAtTime(isClick ? 260 : 620, now);
+            if (isClick) oscillator.frequency.exponentialRampToValueAtTime(170, now + duration);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(isClick ? 0.006 : 0.0025, now + 0.008);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            oscillator.start(now);
+            oscillator.stop(now + duration);
+          };
+          if (context.state === "running") {
+            playTone();
+          } else {
+            context.resume().then(playTone).catch((error) => {
+              console.warn("Unable to play an interface sound.", error);
+            });
+          }
+        };
+        document.addEventListener("pointerover", (event) => {
+          if (event.pointerType === "touch" || !(event.target instanceof Element)) return;
+          const control = event.target.closest(soundTargetSelector);
+          if (
+            control &&
+            !(event.relatedTarget instanceof Node && control.contains(event.relatedTarget))
+          ) {
+            playInterfaceSound("hover");
+          }
+        });
+        document.addEventListener("click", (event) => {
+          if (!(event.target instanceof Element)) return;
+          if (event.target.closest(soundTargetSelector)) playInterfaceSound("click");
+        });
+        const setNavigationOpen = (open) => {
+          document.querySelector("header")?.classList.toggle("nav-open", open);
+          navigationToggle?.setAttribute("aria-expanded", String(open));
+          navigationToggle?.setAttribute(
+            "aria-label",
+            open ? "Close section navigation" : "Open section navigation",
+          );
+          const icon = navigationToggle?.querySelector(
+            ".material-symbols-outlined",
+          );
+          if (icon) icon.textContent = open ? "close" : "menu";
+        };
+        navigationToggle?.addEventListener("click", () => {
+          setNavigationOpen(
+            navigationToggle.getAttribute("aria-expanded") !== "true",
+          );
+        });
+        const startMenuFog = () => {
+          if (document.body.dataset.screen !== "hero" || !menuFogVideo.paused) return;
+          const playback = menuFogVideo.play();
+          if (playback) {
+            playback.catch((error) => {
+              if (error.name !== "NotAllowedError" && error.name !== "AbortError") {
+                console.warn("Unable to play the main menu fog video.", error);
+              }
+            });
+          }
+        };
+        menuFogVideo.addEventListener("canplay", startMenuFog);
+        document.addEventListener("click", startMenuFog);
+        let activeMusic = null;
+        const startActiveMusic = () => {
+          if (!activeMusic || !activeMusic.paused) return;
+          const track = activeMusic;
+          const playback = track.play();
+          if (playback) {
+            playback.catch((error) => {
+              if (
+                activeMusic === track &&
+                error.name !== "NotAllowedError" &&
+                error.name !== "AbortError"
+              ) {
+                console.warn("Unable to play the portfolio background music.", error);
+              }
+            });
+          }
+        };
+        const syncMusicWithScreen = (screenId) => {
+          const nextMusic = screenId === "hero" ? menuMusic : portfolioMusic;
+          if (activeMusic !== nextMusic) {
+            [menuMusic, portfolioMusic].forEach((track) => track.pause());
+            nextMusic.currentTime = 0;
+            activeMusic = nextMusic;
+          }
+          startActiveMusic();
+        };
+        document.addEventListener("click", startActiveMusic);
+        const readScreenFromHash = () => {
+          const requestedScreen = window.location.hash.slice(1);
+          return screenIds.has(requestedScreen) ? requestedScreen : "hero";
+        };
+        const showScreen = (screenId, moveFocus = false) => {
+          const enteringNewScreen = document.body.dataset.screen !== screenId;
+          setNavigationOpen(false);
+          document.body.dataset.screen = screenId;
+          syncMusicWithScreen(screenId);
+          if (screenId === "hero") {
+            startMenuFog();
+          } else {
+            menuFogVideo.pause();
+          }
+          document.querySelectorAll("main > section").forEach((section) => {
+            section.hidden = section.id !== screenId;
+          });
+          if (enteringNewScreen) {
+            const activeSection = document.getElementById(screenId);
+            activeSection.classList.remove("screen-enter");
+            void activeSection.offsetWidth;
+            activeSection.classList.add("screen-enter");
+          }
+          document.querySelectorAll(".navlinks a").forEach((link) => {
+            link.classList.toggle(
+              "active",
+              link.getAttribute("href") === `#${screenId}`,
+            );
+          });
+          window.scrollTo(0, 0);
+          if (moveFocus) {
+            const focusTarget =
+              screenId === "hero"
+                ? document.querySelector(".hero-menu-list a")
+                : document.querySelector(`#${screenId} .kicker`);
+            if (focusTarget) {
+              if (screenId !== "hero") focusTarget.tabIndex = -1;
+              focusTarget.focus({ preventScroll: true });
+            }
+          }
+        };
+        const navigateToScreen = (screenId, moveFocus = false) => {
+          if (screenId === document.body.dataset.screen) return;
+          window.history.pushState(null, "", `#${screenId}`);
+          showScreen(screenId, moveFocus);
+        };
+        if (!screenIds.has(window.location.hash.slice(1))) {
+          window.history.replaceState(null, "", "#hero");
+        }
+        showScreen(readScreenFromHash());
+        document.querySelectorAll(".hero-menu-list a, .screen-back, .brand, .navlinks a, .nav-cta").forEach((link) => {
+          link.addEventListener("click", (event) => {
+            const targetScreen = link.getAttribute("href")?.slice(1);
+            if (!targetScreen || !screenIds.has(targetScreen)) return;
+            event.preventDefault();
+            navigateToScreen(targetScreen, true);
+          });
+        });
+        window.addEventListener("popstate", () => {
+          showScreen(readScreenFromHash(), true);
+        });
 
         const streakCount = document.getElementById("duolingo-streak-count");
         if (streakCount) {
@@ -41,135 +222,9 @@
           );
         }
 
-        const themeToggle = document.querySelector(".theme-toggle");
-        const updateThemeToggle = (theme) => {
-          if (!themeToggle) return;
-          const darkMode = theme === "dark";
-          themeToggle.setAttribute("aria-pressed", String(darkMode));
-          themeToggle.setAttribute(
-            "aria-label",
-            darkMode ? "Switch to light mode" : "Switch to dark mode",
-          );
-          themeToggle.setAttribute(
-            "title",
-            darkMode ? "Switch to light mode" : "Switch to dark mode",
-          );
-          themeToggle.querySelector(".theme-icon").textContent = darkMode
-            ? "light_mode"
-            : "dark_mode";
-        };
-        updateThemeToggle(initialTheme);
-        themeToggle?.addEventListener("click", () => {
-          const nextTheme =
-            document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-          document.documentElement.dataset.theme = nextTheme;
-          window.localStorage.setItem("portfolio-theme", nextTheme);
-          updateThemeToggle(nextTheme);
-        });
-
         const reduceMotion = window.matchMedia(
           "(prefers-reduced-motion: reduce)",
         ).matches;
-
-        /* ---------- star cursor and click sparks ---------- */
-        const starCursor = document.querySelector(".star-cursor");
-        const cursorSparks = document.querySelector(".cursor-sparks");
-        const cursorGlow = document.querySelector(".cursor-glow");
-        const finePointer = window.matchMedia(
-          "(hover: hover) and (pointer: fine)",
-        ).matches;
-        if (
-          starCursor &&
-          cursorSparks &&
-          cursorGlow &&
-          finePointer &&
-          !reduceMotion
-        ) {
-          let cursorFrame;
-          let cursorX = -100;
-          let cursorY = -100;
-          const setCursorPosition = () => {
-            starCursor.style.setProperty("--cursor-x", `${cursorX}px`);
-            starCursor.style.setProperty("--cursor-y", `${cursorY}px`);
-            starCursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0)`;
-          };
-          const createTrailStar = (event) => {
-            const trailStar = document.createElement("span");
-            const colors = ["#dbe1ff", "#b9c7ff", "#7887e8", "#ffffff"];
-            trailStar.className = "cursor-trail-star";
-            trailStar.textContent = "✦";
-            trailStar.style.left = `${event.clientX}px`;
-            trailStar.style.top = `${event.clientY}px`;
-            trailStar.style.setProperty(
-              "--trail-size",
-              `${7 + Math.random() * 9}px`,
-            );
-            trailStar.style.setProperty(
-              "--trail-color",
-              colors[Math.floor(Math.random() * colors.length)],
-            );
-            cursorSparks.append(trailStar);
-            trailStar.addEventListener("animationend", () => trailStar.remove(), {
-              once: true,
-            });
-          };
-          const moveCursor = (event) => {
-            cursorX = event.clientX - 11;
-            cursorY = event.clientY - 11;
-            cursorGlow.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate3d(-50%, -50%, 0)`;
-            cursorGlow.classList.add("is-visible");
-            createTrailStar(event);
-            if (!cursorFrame) {
-              cursorFrame = window.requestAnimationFrame(() => {
-                setCursorPosition();
-                cursorFrame = undefined;
-              });
-            }
-          };
-          const createSparks = (event) => {
-            starCursor.classList.add("is-clicking");
-            window.setTimeout(() => {
-              starCursor.classList.remove("is-clicking");
-              setCursorPosition();
-            }, 180);
-            const sparkCount = 8;
-            for (let index = 0; index < sparkCount; index += 1) {
-              const spark = document.createElement("span");
-              const angle = (Math.PI * 2 * index) / sparkCount;
-              const distance = 16 + Math.random() * 16;
-              spark.className = "cursor-spark";
-              spark.style.left = `${event.clientX - 2.5}px`;
-              spark.style.top = `${event.clientY - 2.5}px`;
-              spark.style.setProperty("--spark-x", `${Math.cos(angle) * distance}px`);
-              spark.style.setProperty("--spark-y", `${Math.sin(angle) * distance}px`);
-              cursorSparks.append(spark);
-              spark.addEventListener("animationend", () => spark.remove(), {
-                once: true,
-              });
-            }
-          };
-          document.addEventListener("pointermove", moveCursor, { passive: true });
-          document.addEventListener("pointerleave", () => {
-            cursorGlow.classList.remove("is-visible");
-          });
-          document.addEventListener("pointerdown", createSparks);
-          document.addEventListener("pointerover", (event) => {
-            const target = event.target.closest("a, button, [role='button'], summary");
-            const relatedTarget =
-              event.relatedTarget instanceof Element ? event.relatedTarget : null;
-            if (target && !target.contains(relatedTarget)) {
-              starCursor.classList.add("is-hovering");
-            }
-          });
-          document.addEventListener("pointerout", (event) => {
-            const target = event.target.closest("a, button, [role='button'], summary");
-            const relatedTarget =
-              event.relatedTarget instanceof Element ? event.relatedTarget : null;
-            if (target && !target.contains(relatedTarget)) {
-              starCursor.classList.remove("is-hovering");
-            }
-          });
-        }
 
         /* ---------- starfield ---------- */
         const canvas = document.getElementById("stars");
@@ -191,10 +246,7 @@
         }
         function drawStars() {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle =
-            document.documentElement.dataset.theme === "dark"
-              ? "#dbe1ff"
-              : "#9fc8e8";
+          ctx.fillStyle = "#d4d4d0";
           for (const s of stars) {
             ctx.globalAlpha = s.a;
             ctx.beginPath();
@@ -215,25 +267,6 @@
           resize();
           makeStars();
         });
-
-        /* ---------- continuously playing hero video ---------- */
-        const heroVideo = document.querySelector(".hero-video");
-        if (heroVideo) {
-          heroVideo.addEventListener(
-            "loadeddata",
-            () => {
-              if (heroVideo.currentTime === 0) {
-                heroVideo.currentTime = 0.01;
-              }
-            },
-            { once: true },
-          );
-          heroVideo.play().catch((error) => {
-            if (error.name !== "AbortError") {
-              console.error("Unable to autoplay the hero video.", error);
-            }
-          });
-        }
 
         /* ---------- seamless collaboration marquee ---------- */
         const collabTrack = document.querySelector(".collab-track");
@@ -281,45 +314,250 @@
           revealEls.forEach((el) => el.classList.add("in"));
         }
 
-        /* ---------- animated skill bars ---------- */
-        const barFills = document.querySelectorAll(".bar-fill");
-        barFills.forEach((el) =>
-          el.style.setProperty("--target-pct", el.dataset.pct + "%"),
-        );
-        if ("IntersectionObserver" in window) {
-          const barIO = new IntersectionObserver(
-            (entries) => {
-              entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                  entry.target.classList.add("filled");
-                  barIO.unobserve(entry.target);
+        /* ---------- interactive skill constellations ---------- */
+        const constellationPositions = [
+          [18, 22],
+          [50, 14],
+          [82, 22],
+          [25, 50],
+          [75, 50],
+          [18, 80],
+          [50, 87],
+          [82, 80],
+          [50, 40],
+          [50, 68],
+        ];
+        const skillDescriptions = {
+          JavaScript: "Adds interactive behavior and dynamic features to web interfaces.",
+          TypeScript: "Adds static typing to JavaScript to make larger applications easier to maintain.",
+          Java: "A general-purpose, object-oriented language used for application development.",
+          Python: "Used for scripting, data workflows, and backend development.",
+          Dart: "The programming language used to build Flutter applications.",
+          Kotlin: "A modern JVM language used for Android and application development.",
+          Laravel: "A PHP framework for building structured web applications and APIs.",
+          Angular: "A TypeScript framework for building component-based web applications.",
+          FastAPI: "A Python framework for building typed, high-performance APIs.",
+          React: "A component-based library for building interactive user interfaces.",
+          Vite: "A fast development server and build tool for modern frontend projects.",
+          "Tailwind CSS": "A utility-first CSS framework for building custom interfaces.",
+          Flutter: "A cross-platform UI toolkit for building mobile and web applications.",
+          MySQL: "A relational database used to store and query structured application data.",
+          PostgreSQL: "An open-source relational database with advanced querying features.",
+          pgvector: "A PostgreSQL extension for storing and searching vector embeddings.",
+          MongoDB: "A document database for storing flexible, JSON-like records.",
+          "Classification and clustering": "Machine-learning approaches for grouping data and predicting categories.",
+          Jira: "A project-tracking tool for managing tasks, issues, and delivery workflows.",
+          ClickUp: "A workspace for organizing projects, tasks, and team collaboration.",
+          "Google Workspace": "A suite of tools for documents, spreadsheets, communication, and collaboration.",
+          Illustration: "Creates visual artwork and illustrations for digital projects.",
+          Figma: "A collaborative design tool for interface design and prototyping.",
+          "Video and photo editing": "Edits visual media for presentations and digital content.",
+          Indonesian: "Native fluency for everyday and professional communication.",
+          English: "Proficient fluency for written and spoken communication.",
+        };
+        const stackCategories = [
+          ...document.querySelectorAll("#stack .stack-col"),
+        ];
+        const stackGrid = document.querySelector("#stack .stack-grid");
+        const stackNavigation = document.createElement("nav");
+        const stackPrevious = document.createElement("button");
+        const stackPosition = document.createElement("span");
+        const stackNext = document.createElement("button");
+        let activeStackCategory = 0;
+        const showStackCategory = (index) => {
+          activeStackCategory = Math.max(
+            0,
+            Math.min(index, stackCategories.length - 1),
+          );
+          stackCategories.forEach((category, categoryIndex) => {
+            const isActive = categoryIndex === activeStackCategory;
+            category.hidden = !isActive;
+            category.inert = !isActive;
+            category.setAttribute("aria-hidden", String(!isActive));
+          });
+          const activeCategory = stackCategories[activeStackCategory];
+          const categoryName =
+            activeCategory.querySelector("h3")?.textContent.trim() || "";
+          const accent = getComputedStyle(activeCategory)
+            .getPropertyValue("--stack-accent")
+            .trim();
+          stackGrid.style.setProperty("--active-stack-accent", accent);
+          const constellation = activeCategory.querySelector(
+            ".stack-constellation",
+          );
+          if (constellation) {
+            const lines = constellation.querySelector(
+              ".stack-constellation-lines",
+            );
+            const path = lines?.querySelector("path");
+            if (path) {
+                path.style.transition = "none";
+                path.style.strokeDashoffset = "1";
+              void path.getBoundingClientRect();
+              requestAnimationFrame(() => {
+                if (!activeCategory.hidden) {
+                  path.style.transition = "";
+                  path.style.strokeDashoffset = "0";
                 }
               });
-            },
-            { threshold: 0.2 },
-          );
-          barFills.forEach((el) => barIO.observe(el));
-        } else {
-          barFills.forEach((el) => el.classList.add("filled"));
-        }
-
-        /* ---------- expandable stack details ---------- */
-        document.querySelectorAll(".stack-col .bar-row").forEach((row) => {
-          row.tabIndex = 0;
-          row.setAttribute("role", "button");
-          row.setAttribute("aria-expanded", "false");
-          const toggleDetails = () => {
-            const expanded = row.classList.toggle("is-expanded");
-            row.setAttribute("aria-expanded", String(expanded));
-          };
-          row.addEventListener("click", toggleDetails);
-          row.addEventListener("keydown", (event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              toggleDetails();
             }
+          }
+          stackPosition.textContent = categoryName;
+        };
+        const moveStackCategory = (direction) => {
+          const nextIndex =
+            (activeStackCategory + direction + stackCategories.length) %
+            stackCategories.length;
+          showStackCategory(nextIndex);
+          stackGrid.focus({ preventScroll: true });
+        };
+
+        stackNavigation.className = "stack-navigation";
+        stackNavigation.setAttribute("aria-label", "Skill categories");
+        stackPrevious.type = "button";
+        stackPrevious.className = "stack-navigation-button";
+        stackPrevious.textContent = "←";
+        stackPrevious.setAttribute("aria-label", "Previous skill category");
+        stackPosition.className = "stack-navigation-position";
+        stackPosition.setAttribute("aria-live", "polite");
+        stackNext.type = "button";
+        stackNext.className = "stack-navigation-button";
+        stackNext.textContent = "→";
+        stackNext.setAttribute("aria-label", "Next skill category");
+        stackNavigation.append(stackPrevious, stackPosition, stackNext);
+        stackGrid.after(stackNavigation);
+        stackGrid.tabIndex = -1;
+        stackPrevious.addEventListener("click", () => moveStackCategory(-1));
+        stackNext.addEventListener("click", () => moveStackCategory(1));
+
+        stackCategories.forEach((category) => {
+          const heading = category.querySelector("h3");
+          const constellation = category.querySelector(".bars");
+          if (!heading || !constellation) return;
+          const skills = [...constellation.querySelectorAll(".bar-row")];
+          const detail = document.createElement("div");
+          const detailName = document.createElement("strong");
+          const detailLevel = document.createElement("span");
+          const detailDescription = document.createElement("p");
+          const detailTrack = document.createElement("div");
+          const detailFill = document.createElement("span");
+          detail.className = "stack-skill-detail";
+          detail.setAttribute("aria-live", "polite");
+          detailName.className = "stack-skill-detail-name";
+          detailLevel.className = "stack-skill-detail-level";
+          detailDescription.className = "stack-skill-detail-description";
+          detailTrack.className = "stack-skill-detail-track";
+          detailFill.className = "stack-skill-detail-fill";
+          detailTrack.setAttribute("aria-hidden", "true");
+          detailTrack.append(detailFill);
+          detail.append(
+            detailName,
+            detailLevel,
+            detailDescription,
+            detailTrack,
+          );
+          constellation.classList.add("stack-constellation");
+          constellation.setAttribute("role", "group");
+          constellation.setAttribute(
+            "aria-label",
+            `${heading.textContent.trim()} skills`,
+          );
+
+          const points = skills.map((skill, index) => {
+            const stackName = skill.querySelector(".stack-name");
+            const skillName =
+              stackName?.getAttribute("title") ||
+              stackName?.querySelector(".sr-only")?.textContent.trim() ||
+              stackName?.textContent.trim() ||
+              "Skill";
+            const level = skill.querySelector(".lvl")?.textContent.trim() || "";
+            const percentage = Number(
+              skill.querySelector(".bar-fill")?.dataset.pct || 0,
+            );
+            const [x, y] =
+              constellationPositions[index % constellationPositions.length];
+            const button = document.createElement("button");
+            const core = document.createElement("span");
+            const label = document.createElement("span");
+            const icon = stackName?.querySelector("i, .material-symbols-outlined");
+            button.type = "button";
+            button.className = "stack-node";
+            button.style.setProperty("--node-x", `${x}%`);
+            button.style.setProperty("--node-y", `${y}%`);
+            button.setAttribute(
+              "aria-label",
+              `${skillName}, ${level}. Select for details.`,
+            );
+            button.setAttribute("aria-pressed", "false");
+            core.className = "stack-node-core";
+            label.className = "stack-node-label";
+            if (icon) {
+              const iconCopy = icon.cloneNode(true);
+              iconCopy.setAttribute("aria-hidden", "true");
+              core.append(iconCopy);
+            } else {
+              core.textContent = "✦";
+              core.setAttribute("aria-hidden", "true");
+            }
+            label.textContent = skillName;
+            button.append(core, label);
+            button.addEventListener("click", () => {
+              points.forEach((point) => {
+                point.button.setAttribute(
+                  "aria-pressed",
+                  String(point.button === button),
+                );
+              });
+              detailName.textContent = skillName;
+              detailLevel.textContent = `${level} · ${percentage}%`;
+              detailDescription.textContent =
+                skillDescriptions[skillName] ||
+                `Practical experience using ${skillName} in projects and coursework.`;
+              detailFill.style.width = `${percentage}%`;
+            });
+            skill.replaceWith(button);
+            return { button, x, y };
           });
+
+          const lines = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg",
+          );
+          lines.classList.add("stack-constellation-lines");
+          lines.setAttribute("viewBox", "0 0 100 100");
+          lines.setAttribute("preserveAspectRatio", "none");
+          lines.setAttribute("aria-hidden", "true");
+          const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path",
+          );
+          const center = points.reduce(
+            (sum, point) => ({
+              x: sum.x + point.x / points.length,
+              y: sum.y + point.y / points.length,
+            }),
+            { x: 0, y: 0 },
+          );
+          const connectedPoints = [...points].sort(
+            (first, second) =>
+              Math.atan2(first.y - center.y, first.x - center.x) -
+              Math.atan2(second.y - center.y, second.x - center.x),
+          );
+          const pathData = connectedPoints
+            .map((point, index) =>
+              `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`,
+            )
+            .join(" ") + " Z";
+          path.setAttribute("d", pathData);
+          path.setAttribute("pathLength", "1");
+          path.style.strokeDasharray = "1 1";
+          path.style.strokeDashoffset = "1";
+          lines.append(path);
+          constellation.prepend(lines);
+          category.append(detail);
+          points[0]?.button.click();
         });
+        showStackCategory(0);
 
         /* ---------- compact details and count-up metrics ---------- */
         function addDetails(selector, label) {
@@ -336,14 +574,23 @@
         addDetails(".tl-desc", "Read role details");
         addDetails(".ach-card > p", "Read more");
 
-        /* ---------- interactive experience solar system ---------- */
+        /* ---------- interactive experience journal ---------- */
         const experiencePlanets = document.querySelectorAll(
           ".solar-system .tl-item",
         );
         const experiencePanel = document.querySelector(
           ".experience-detail-panel",
         );
+        const experienceList = document.getElementById(
+          "experience-journal-list",
+        );
+        const experienceEntries = new Map();
         const selectExperience = (planet) => {
+          experienceEntries.forEach((button, entry) => {
+            const selected = entry === planet;
+            button.classList.toggle("active", selected);
+            button.setAttribute("aria-current", String(selected));
+          });
           experiencePlanets.forEach((item) => {
             const selected = item === planet;
             item.classList.toggle("is-selected", selected);
@@ -354,59 +601,63 @@
           const org = planet.querySelector(".tl-org");
           const date = planet.querySelector(".tl-date");
           const description = planet.querySelector("details.more p");
-          experiencePanel.innerHTML = `
-            <img class="detail-panel-logo" src="${logo.src}" alt="${logo.alt}" />
-            <h3 class="detail-panel-title">${role.textContent}</h3>
-            <p class="detail-panel-meta">${org.textContent} · ${date.textContent}</p>
-            <p class="detail-panel-copy">${description.textContent}</p>
+          const frame = document.createElement("div");
+          frame.className = "experience-journal-frame";
+          frame.innerHTML = `
+            <span class="quest-corner quest-corner-top-right" aria-hidden="true"></span>
+            <span class="quest-corner quest-corner-bottom-left" aria-hidden="true"></span>
           `;
+          const heading = document.createElement("div");
+          heading.className = "experience-journal-heading";
+          const detailLogo = logo.cloneNode();
+          detailLogo.className = "experience-journal-logo";
+          detailLogo.loading = "eager";
+          const title = document.createElement("div");
+          title.className = "experience-journal-title";
+          const titleText = document.createElement("h3");
+          titleText.className = "detail-panel-title";
+          titleText.textContent = role.textContent.trim();
+          const meta = document.createElement("p");
+          meta.className = "detail-panel-meta";
+          meta.textContent = `${org.textContent.trim()} · ${date.textContent.trim()}`;
+          title.append(titleText, meta);
+          heading.append(detailLogo, title);
+
+          const descriptionText = document.createElement("p");
+          descriptionText.className = "detail-panel-copy";
+          descriptionText.textContent = description.textContent.trim();
+
+          frame.append(heading, descriptionText);
+          const tags = planet.querySelector(".tl-tags")?.cloneNode(true);
+          if (tags) {
+            tags.className = "experience-journal-tags";
+            frame.appendChild(tags);
+          }
+          experiencePanel.replaceChildren(frame);
           experiencePanel.classList.add("has-selection");
         };
         experiencePlanets.forEach((planet) => {
-          planet.tabIndex = 0;
-          planet.setAttribute("role", "button");
-          planet.setAttribute("aria-expanded", "false");
-          planet.addEventListener("click", () => selectExperience(planet));
-          planet.addEventListener("keydown", (event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              selectExperience(planet);
-            }
-          });
+          const role = planet.querySelector(".tl-role");
+          const org = planet.querySelector(".tl-org");
+          const date = planet.querySelector(".tl-date");
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "experience-journal-entry";
+          const label = document.createElement("span");
+          label.className = "experience-journal-entry-title";
+          label.textContent = role.textContent.trim();
+          const organization = document.createElement("span");
+          organization.className = "experience-journal-entry-org";
+          organization.textContent = org.textContent.trim();
+          const period = document.createElement("span");
+          period.className = "experience-journal-entry-date";
+          period.textContent = date.textContent.trim();
+          button.append(label, organization, period);
+          button.addEventListener("click", () => selectExperience(planet));
+          experienceList.appendChild(button);
+          experienceEntries.set(planet, button);
         });
-
-        /* ---------- music player ---------- */
-        const musicPlayer = document.getElementById("music-player");
-        const musicToggle = document.querySelector(".music-toggle");
-        const musicIcon = musicToggle.querySelector(
-          ".material-symbols-outlined",
-        );
-        const setMusicState = (isPlaying) => {
-          musicToggle.setAttribute("aria-pressed", String(isPlaying));
-          musicToggle.setAttribute(
-            "aria-label",
-            isPlaying ? "Pause Forever Young" : "Play Forever Young",
-          );
-          musicToggle.setAttribute(
-            "title",
-            isPlaying ? "Pause Forever Young" : "Play Forever Young",
-          );
-          musicIcon.textContent = isPlaying ? "pause" : "play_arrow";
-        };
-        musicToggle.addEventListener("click", () => {
-          if (musicPlayer.paused) {
-            musicPlayer.play().catch((error) => {
-              setMusicState(false);
-              console.error("Unable to play Forever Young.", error);
-            });
-          } else {
-            musicPlayer.pause();
-            setMusicState(false);
-          }
-        });
-        musicPlayer.addEventListener("play", () => setMusicState(true));
-        musicPlayer.addEventListener("pause", () => setMusicState(false));
-        musicPlayer.addEventListener("ended", () => setMusicState(false));
+        if (experiencePlanets.length) selectExperience(experiencePlanets[0]);
 
         const metricEls = document.querySelectorAll(".stat b, .card-metrics b");
         const animateMetric = (el) => {
@@ -599,15 +850,45 @@
         lightbox.addEventListener("click", (e) => {
           if (e.target === lightbox) closeLightbox();
         });
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape") closeLightbox();
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            if (lightbox.classList.contains("open")) {
+              closeLightbox();
+            } else {
+              navigateToScreen("hero", true);
+            }
+            return;
+          }
+          if (
+            lightbox.classList.contains("open") ||
+            event.altKey ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.target instanceof HTMLElement &&
+              (event.target.isContentEditable ||
+                event.target.matches("input, select, textarea"))
+          ) {
+            return;
+          }
+          if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+          if (document.body.dataset.screen === "stack") {
+            event.preventDefault();
+            moveStackCategory(event.key === "ArrowRight" ? 1 : -1);
+            return;
+          }
+          const currentIndex = screenOrder.indexOf(document.body.dataset.screen);
+          const direction = event.key === "ArrowRight" ? 1 : -1;
+          const nextIndex =
+            (currentIndex + direction + screenOrder.length) % screenOrder.length;
+          event.preventDefault();
+          navigateToScreen(screenOrder[nextIndex], true);
         });
 
         /* ---------- project filter ---------- */
         const filterBtns = document.querySelectorAll(".filter-btn");
-        const projectCards = document.querySelectorAll(
-          "#projects .project-grid .card",
-        );
+        const projectCards = [
+          ...document.querySelectorAll("#projects .project-grid .card"),
+        ];
         const cards = document.querySelectorAll("#project-grid .card");
         const ongoingGrid = document.querySelector(
           "#projects .ongoing-project-grid",
@@ -617,6 +898,124 @@
           "#project-grid",
         )?.previousElementSibling;
         const projectGrid = document.getElementById("project-grid");
+        const projectQuestList = document.getElementById("project-quest-list");
+        const projectQuestDetail = document.getElementById("project-quest-detail");
+        const projectQuestButtons = new Map();
+        let selectedQuestProject = null;
+
+        const selectQuestProject = (card) => {
+          selectedQuestProject = card;
+          projectQuestButtons.forEach((button, project) => {
+            const selected = project === card;
+            button.classList.toggle("active", selected);
+            button.setAttribute("aria-current", String(selected));
+          });
+
+          const title = card.querySelector(".card-title")?.textContent.trim() ?? "";
+          const category = card.querySelector(".card-cat")?.textContent.trim() ?? "";
+          const role = card.querySelector(".card-role")?.textContent.trim() ?? "";
+          const description = card.querySelector(".card-desc")?.textContent.trim() ?? "";
+          const isOngoing = card.closest(".ongoing-project-grid") !== null;
+          const media = card.querySelector(".card-media")?.cloneNode(true);
+          const stack = card.querySelector(".card-stack")?.cloneNode(true);
+          const metrics = card.querySelector(".card-metrics")?.cloneNode(true);
+          const links = [...card.querySelectorAll(".card-link")].map((link) =>
+            link.cloneNode(true),
+          );
+
+          projectQuestDetail.replaceChildren();
+          const frame = document.createElement("div");
+          frame.className = "project-quest-frame";
+          frame.innerHTML = `
+            <span class="quest-corner quest-corner-top-right" aria-hidden="true"></span>
+            <span class="quest-corner quest-corner-bottom-left" aria-hidden="true"></span>
+          `;
+
+          const detailMedia = document.createElement("div");
+          detailMedia.className = "project-quest-media";
+          if (media) {
+            media.className = "project-quest-media-content";
+            media.querySelectorAll("img").forEach((image) => {
+              image.loading = "eager";
+            });
+            detailMedia.appendChild(media);
+          }
+
+          const heading = document.createElement("h3");
+          heading.className = "project-quest-title";
+          heading.textContent = title;
+
+          const metadata = document.createElement("div");
+          metadata.className = "project-quest-meta";
+          const categoryLabel = document.createElement("span");
+          categoryLabel.textContent = category;
+          const statusLabel = document.createElement("span");
+          statusLabel.textContent = isOngoing ? "IN PROGRESS" : "COMPLETED";
+          metadata.append(categoryLabel, statusLabel);
+
+          const copy = document.createElement("div");
+          copy.className = "project-quest-copy";
+          if (role) {
+            const roleLabel = document.createElement("p");
+            roleLabel.className = "project-quest-role";
+            roleLabel.textContent = role;
+            copy.appendChild(roleLabel);
+          }
+          const descriptionText = document.createElement("p");
+          descriptionText.className = "project-quest-description";
+          descriptionText.textContent = description;
+          copy.appendChild(descriptionText);
+
+          const footer = document.createElement("div");
+          footer.className = "project-quest-footer";
+          const footerLabel = document.createElement("p");
+          footerLabel.className = "project-quest-footer-label";
+          footerLabel.textContent = "TOOLS & OBJECTIVES";
+          footer.appendChild(footerLabel);
+          if (stack) {
+            stack.classList.add("project-quest-stack");
+            footer.appendChild(stack);
+          }
+          if (metrics) {
+            metrics.classList.add("project-quest-metrics");
+            footer.appendChild(metrics);
+          }
+          if (links.length) {
+            const actionLinks = document.createElement("div");
+            actionLinks.className = "project-quest-links";
+            links.forEach((link) => actionLinks.appendChild(link));
+            footer.appendChild(actionLinks);
+          }
+
+          const galleryButton = document.createElement("button");
+          galleryButton.type = "button";
+          galleryButton.className = "project-quest-gallery";
+          galleryButton.textContent = "OPEN GALLERY";
+          galleryButton.addEventListener("click", () => openProject(card));
+
+          frame.append(detailMedia, heading, metadata, copy, footer, galleryButton);
+          projectQuestDetail.appendChild(frame);
+        };
+
+        projectCards.forEach((card, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "project-quest-entry";
+          button.dataset.category = card.dataset.cat ?? "";
+          const title = card.querySelector(".card-title")?.textContent.trim() ?? `Project ${index + 1}`;
+          const category = card.querySelector(".card-cat")?.textContent.trim() ?? "";
+          const label = document.createElement("span");
+          label.className = "project-quest-entry-title";
+          label.textContent = title;
+          const sublabel = document.createElement("span");
+          sublabel.className = "project-quest-entry-category";
+          sublabel.textContent = category;
+          button.append(label, sublabel);
+          button.addEventListener("click", () => selectQuestProject(card));
+          projectQuestList.appendChild(button);
+          projectQuestButtons.set(card, button);
+        });
+
         const updateProjectLayout = () => {
           const visibleCards = [...cards].filter((card) => card.style.display !== "none");
           projectGrid.classList.toggle("single-result", visibleCards.length === 1);
@@ -627,6 +1026,23 @@
           if (ongoingTitle) ongoingTitle.style.display = ongoingVisible ? "" : "none";
           if (projectGrid) projectGrid.style.display = finishedVisible ? "" : "none";
           if (finishedTitle) finishedTitle.style.display = finishedVisible ? "" : "none";
+
+          projectCards.forEach((card) => {
+            const button = projectQuestButtons.get(card);
+            if (button) button.hidden = card.style.display === "none";
+          });
+          const selectedIsVisible =
+            selectedQuestProject && selectedQuestProject.style.display !== "none";
+          if (!selectedIsVisible) {
+            const firstVisible = projectCards.find(
+              (card) => card.style.display !== "none",
+            );
+            if (firstVisible) selectQuestProject(firstVisible);
+            else {
+              selectedQuestProject = null;
+              projectQuestDetail.replaceChildren();
+            }
+          }
         };
         filterBtns.forEach((btn) => {
           btn.addEventListener("click", () => {
@@ -758,49 +1174,15 @@
           btn.addEventListener("click", () => ask(btn.dataset.q));
         });
 
-        /* ---------- rotating hero greeting ---------- */
-        const heroGreeting = document.querySelector(".hero-greeting");
-        const greetings = [
-          "Hi, I'm Ren.",
-          "Halo, saya Ren.",
-          "你好，我是 Ren。",
-          "こんにちは、Renです。",
-          "Hola, soy Ren.",
-        ];
-        let greetingIndex = 0;
-        if (heroGreeting) {
-          if (reduceMotion) {
-            heroGreeting.textContent = greetings[0];
-          } else {
-            let characterIndex = 0;
-            let deleting = false;
-            const typeGreeting = () => {
-              const greeting = greetings[greetingIndex];
-              characterIndex += deleting ? -1 : 1;
-              heroGreeting.textContent = greeting.slice(0, characterIndex);
-
-              let delay = deleting ? 48 : 92;
-              if (!deleting && characterIndex === greeting.length) {
-                delay = 1500;
-                deleting = true;
-              } else if (deleting && characterIndex === 0) {
-                deleting = false;
-                greetingIndex = (greetingIndex + 1) % greetings.length;
-                delay = 350;
-              }
-              window.setTimeout(typeGreeting, delay);
-            };
-            heroGreeting.textContent = "";
-            typeGreeting();
-          }
-        }
-
         /* ---------- language preference ---------- */
         const languageModal = document.getElementById("language-modal");
         const languageButtons = document.querySelectorAll("[data-language]");
         const translations = {
           id: {
-            nav: ["Tentang", "Pengalaman", "Proyek", "Keahlian", "Tanya Ren"],
+            nav: ["Tentang", "Pengalaman", "Proyek", "Keahlian", "Pencapaian", "GitHub", "Tanya Ren", "Kontak"],
+            menu: ["Tentang", "Pengalaman", "Proyek", "Keahlian & teknologi", "Pencapaian", "GitHub", "Tanya Ren", "Kontak"],
+            menuHint: "Pilih tujuan untuk melanjutkan",
+            menuIntro: "Produk · kode · data.",
             cta: "Hubungi saya",
             heroEyebrow: "Intern Data Specialist di IPDN · Bandung, Indonesia",
             heroTitle: "Saya mengubah <em>ide</em> menjadi produk yang bisa digunakan.",
@@ -822,7 +1204,7 @@
             stack: "Keahlian teknis",
             stackTitle: "Teknologi yang saya gunakan.",
             stackLede: "Alat untuk merencanakan, membangun, dan mengevaluasi pekerjaan.",
-            achievements: "Pencapaian dan kepemimpinan",
+            achievements: "Pencapaian and kepemimpinan",
             github: "Aktivitas GitHub",
             githubTitle: "Setahun berkarya secara terbuka.",
             githubLead: "Aktivitas kontribusi terbaru dari",
@@ -869,11 +1251,13 @@
           const navlinks = document.querySelectorAll(".navlinks a");
           t.nav.forEach((text, index) => { if (navlinks[index]) navlinks[index].textContent = text; });
           document.querySelector(".nav-cta").textContent = t.cta;
-          document.querySelector(".hero-eyebrow").lastChild.textContent = ` ${t.heroEyebrow}`;
-          document.querySelector(".hero-tagline").innerHTML = t.heroTitle;
-          document.querySelector(".hero-sub").textContent = t.heroSub;
-          document.querySelector(".btn-primary").lastChild.textContent = ` ${t.work}`;
-          document.querySelector(".btn-ghost").lastChild.textContent = ` ${t.ask}`;
+          document.querySelector(".hero-menu-kicker").textContent = "Portofolio · Bandung, Indonesia";
+          document.querySelector(".hero-menu-intro").innerHTML =
+            `${t.menuIntro}<span>${t.heroEyebrow}</span>`;
+          document.querySelectorAll(".hero-menu-list a span").forEach((item, index) => {
+            if (t.menu[index]) item.textContent = t.menu[index];
+          });
+          document.querySelector(".hero-menu-hint").textContent = t.menuHint;
           document.querySelector("#about .kicker").textContent = t.aboutKicker;
           document.querySelector("#experience .kicker").textContent = t.experience;
           document.querySelector("#projects .kicker").textContent = t.projects;
@@ -929,7 +1313,7 @@
           languageToggle.setAttribute("aria-expanded", String(open));
         };
         if (savedLanguage === "id") applyLanguage("id");
-        else if (!savedLanguage) setLanguageWidgetState(true);
+        else if (!savedLanguage) setLanguageWidgetState(false);
         languageToggle.addEventListener("click", () => {
           setLanguageWidgetState(!languageModal.classList.contains("open"));
         });

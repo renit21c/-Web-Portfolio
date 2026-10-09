@@ -20,6 +20,10 @@
       rel="stylesheet"
     />
     <link
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Fjalla+One&family=Oswald:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,0"
       rel="stylesheet"
     />
@@ -35,10 +39,6 @@
   </head>
   <body>
     <div class="nebula"></div>
-    <div class="cursor-glow" aria-hidden="true"></div>
-    <div class="star-cursor" aria-hidden="true">✦</div>
-    <div class="cursor-sparks" aria-hidden="true"></div>
-
     <header>
       <nav>
         <a href="#hero" class="brand" aria-label="Portfolio home">
@@ -49,15 +49,30 @@
           >
           <span>Portfolio</span>
         </a>
-        <div class="navlinks">
+        <div class="navlinks" id="site-navigation">
           <a href="#about">About</a>
           <a href="#experience">Experience</a>
           <a href="#projects">Projects</a>
           <a href="#stack">Stack</a>
+          <a href="#achievements">Achievements</a>
           <a href="#github">GitHub</a>
           <a href="#ask">Ask Ren</a>
+          <a href="#contact">Contact</a>
         </div>
         <a href="#contact" class="nav-cta">Contact</a>
+        <a href="#hero" class="screen-back">
+          <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+          <span>Main Menu</span>
+        </a>
+        <button
+          class="navtoggle"
+          type="button"
+          aria-label="Open section navigation"
+          aria-expanded="false"
+          aria-controls="site-navigation"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+        </button>
       </nav>
     </header>
 
@@ -65,51 +80,47 @@
       <!-- HERO -->
       <section id="hero">
         <video
-          class="hero-video"
+          class="hero-fog-video"
+          src="assets/fog.mp4"
           autoplay
           muted
           loop
           playsinline
-          preload="auto"
           aria-hidden="true"
-        >
-          <source src="assets/earth.mp4" type="video/mp4" />
-        </video>
+          tabindex="-1"
+        ></video>
         <div class="wrap hero-grid">
-          <div class="hero-side hero-side-left">
-            <div class="hero-eyebrow">
-              Data Specialist Intern @ IPDN · Bandung, Indonesia
+          <div class="hero-menu-panel">
+            <div class="hero-menu-copy">
+              <p class="hero-menu-kicker">Portfolio · Bandung, Indonesia</p>
+              <h1><span class="hero-greeting">REN</span></h1>
+              <p class="hero-menu-intro">
+                Product · code · data.
+                <span>Data Specialist Intern @ IPDN</span>
+              </p>
             </div>
-            <h1><span class="hero-greeting">Hi, I'm Ren.</span></h1>
-          </div>
-          <div class="hero-portrait reveal">
-            <img
-              src="assets/profile/about-portrait.png"
-              alt="Portrait of Ren"
-              loading="eager"
-            />
-          </div>
-          <div class="hero-side hero-side-right">
-            <h1 class="hero-tagline">
-              I like turning <em>ideas</em> into things people can actually use.
-            </h1>
-            <p class="hero-sub">
-              I work across product, code, and data.
-            </p>
-            <div class="hero-cta">
-              <a href="#projects" class="btn btn-primary"
-                ><span class="material-symbols-outlined" aria-hidden="true"
-                  >arrow_outward</span
-                >
-                View my work</a
-              >
-              <a href="#ask" class="btn btn-ghost"
-                ><span class="material-symbols-outlined" aria-hidden="true"
-                  >help</span
-                >
-                Ask about me</a
-              >
+            <div class="dovahzul-inscription" aria-label="Dovahzul phrases">
+              <p>
+                <span class="dovahzul-word">DREM YOL LOK</span>
+                <span class="dovahzul-meaning">Greetings, traveler</span>
+              </p>
+              <p>
+                <span class="dovahzul-word">DOVAHKIIN</span>
+                <span class="dovahzul-meaning">Dragonborn</span>
+              </p>
             </div>
+            <nav class="hero-menu-list" aria-label="Main menu">
+              <p class="hero-menu-title">Main menu</p>
+              <a href="#about"><span>About</span></a>
+              <a href="#experience"><span>Experience</span></a>
+              <a href="#projects"><span>Projects</span></a>
+              <a href="#stack"><span>Skills &amp; stack</span></a>
+              <a href="#achievements"><span>Achievements</span></a>
+              <a href="#github"><span>GitHub</span></a>
+              <a href="#ask"><span>Ask Ren</span></a>
+              <a href="#contact"><span>Contact</span></a>
+            </nav>
+            <p class="hero-menu-hint">Select a destination to continue</p>
           </div>
         </div>
       </section>
@@ -247,15 +258,6 @@
                 > days</span
               >
             </div>
-            <div class="interest-images">
-              <figure class="interest-image-card">
-                <img
-                  src="assets/memes/larp.jpg"
-                  alt="LARP meme"
-                  loading="lazy"
-                />
-              </figure>
-            </div>
           </div>
         </div>
       </section>
@@ -269,12 +271,14 @@
 
           <div
             class="timeline solar-system"
-            aria-label="Interactive experience solar system"
+            role="group"
+            aria-label="Work experience journal"
           >
-            <div class="solar-core" aria-hidden="true">
-              <span class="solar-core-glow"></span>
-              <span class="solar-core-label">Experience</span>
-            </div>
+            <nav
+              class="experience-journal-list"
+              id="experience-journal-list"
+              aria-label="Work experience"
+            ></nav>
             <aside
               class="experience-detail-panel"
               aria-live="polite"
@@ -379,14 +383,6 @@
           <p class="kicker reveal">Projects</p>
           <h2 class="reveal">A mix of product, code, and community.</h2>
           <p class="lede reveal">Browse by category.</p>
-          <figure class="project-intro-image reveal">
-            <img
-              src="assets/memes/useful.jpg"
-              alt="Useful projects meme"
-              loading="lazy"
-            />
-          </figure>
-
           <div class="filter-row reveal">
             <button class="filter-btn" data-filter="product">
               <span class="material-symbols-outlined" aria-hidden="true"
@@ -412,6 +408,20 @@
               >
               Art
             </button>
+          </div>
+
+          <div class="project-quest-layout reveal" id="project-quest-layout">
+            <nav
+              class="project-quest-list"
+              id="project-quest-list"
+              aria-label="Project journal"
+            ></nav>
+            <article
+              class="project-quest-detail"
+              id="project-quest-detail"
+              aria-live="polite"
+              aria-atomic="true"
+            ></article>
           </div>
 
           <h3 class="project-group-title reveal">Ongoing projects</h3>
@@ -839,14 +849,6 @@
           <p class="kicker reveal">Technical stack</p>
           <h2 class="reveal">What I work with.</h2>
           <p class="lede reveal">Tools I use.</p>
-          <figure class="section-meme section-meme-stack reveal">
-            <img
-              src="assets/memes/aniq.jpg"
-              alt="Aniq meme"
-              loading="lazy"
-            />
-          </figure>
-
           <div class="stack-grid reveal">
             <div class="stack-col">
               <h3>Languages</h3>
@@ -1249,16 +1251,8 @@
       <!-- ACHIEVEMENTS -->
       <section id="achievements">
         <div class="wrap">
-          <p class="kicker reveal">Achievements &amp; leadership</p>
+          <p class="kicker reveal">Achievements and leadership</p>
           <h2 class="reveal">A few things I’ve led.</h2>
-          <figure class="section-meme section-meme-achievements reveal">
-            <img
-              src="assets/memes/what.jpg"
-              alt="What meme"
-              loading="lazy"
-            />
-          </figure>
-
           <div class="ach-grid reveal">
             <div class="ach-card">
               <h3>Led Product Development at AIESEC in Bandung</h3>
@@ -1456,37 +1450,8 @@
       </div>
     </div>
 
-    <div class="theme-widget" role="group" aria-label="Theme switcher">
-      <button
-        class="theme-toggle"
-        type="button"
-        aria-label="Switch to dark mode"
-        aria-pressed="false"
-        title="Switch to dark mode"
-      >
-        <span class="material-symbols-outlined theme-icon" aria-hidden="true"
-          >dark_mode</span
-        >
-      </button>
-    </div>
-
-    <div class="music-widget" role="group" aria-label="Music player">
-      <audio id="music-player" preload="metadata">
-        <source src="assets/foreveryoung.mp3" type="audio/mpeg" />
-      </audio>
-      <button
-        class="music-toggle"
-        type="button"
-        aria-label="Play Forever Young"
-        aria-pressed="false"
-        title="Play Forever Young"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true"
-          >play_arrow</span
-        >
-      </button>
-    </div>
-
+    <audio id="main-menu-bgm" src="assets/mainmenu.mp3" preload="auto" loop></audio>
+    <audio id="portfolio-bgm" src="assets/secunda.mp3" preload="auto" loop></audio>
     <script src="script.js"></script>
   </body>
 </html>
